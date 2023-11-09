@@ -15,17 +15,24 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dlnruv.musicApp"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.dlnruv.musicApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "myapp"
+    "scheme": "myapp",
+    "extra": {
+      "eas": {
+        "projectId": "9372fa72-cb14-4d49-9da5-a30a761a0317"
+      }
+    }
   }
 }

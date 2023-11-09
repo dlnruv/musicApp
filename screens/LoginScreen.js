@@ -11,12 +11,18 @@ const LoginScreen = ({ onLogin }) => {
     }, []);
 
     const handleRedirect = async ({ url }) => {
+        alert(url)
+
         // Parse the URL to get the authorization code
         const [, code] = url.match(/\?code=([^&]*)/) || [];
         const [, state] = url.match(/&state=([^&]*)/) || [];
 
+        console.log('Code:', code);
+        console.log('State:', state);
+
         // Verify the state to prevent CSRF attacks
         const storedState = await AsyncStorage.getItem('spotify_auth_state');
+        console.log('Stored State:', storedState);
 
         if (code && state === storedState) {
             // Exchange the authorization code for an access token
@@ -30,8 +36,8 @@ const LoginScreen = ({ onLogin }) => {
 
     const handleLoginPress = async () => {
         // Spotify API credentials
-        const spotifyClientId = '249f2a846fd844ee80987d5b0406fc6d'; // Replace with your actual client ID
-        const redirectUri = AuthSession.makeRedirectUri({ useProxy: true });
+        const spotifyClientId = '249f2a846fd844ee80987d5b0406fc6d';
+        const redirectUri = "exp://hi-po0y.dlnruv.8081.exp.direct"
 
         // Spotify API authorization endpoint
         const authorizationEndpoint = 'https://accounts.spotify.com/authorize';
