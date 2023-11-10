@@ -1,19 +1,18 @@
 import React, { useEffect } from 'react';
-import { View, Button, StyleSheet, Linking } from 'react-native';
+import { View, Button, StyleSheet } from 'react-native';
 import * as AuthSession from 'expo-auth-session';
+import * as Linking from 'expo-linking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from "axios";
 
 const LoginScreen = ({ onLogin }) => {
     useEffect(() => {
-        // Check for Spotify callback on app launch
         Linking.addEventListener('url', handleRedirect);
-        return () => Linking.removeEventListener('url', handleRedirect);
     }, []);
 
     const handleRedirect = async ({ url }) => {
-        alert(url)
+        console.log('Redirect URL:', url);
 
-        // Parse the URL to get the authorization code
         const [, code] = url.match(/\?code=([^&]*)/) || [];
         const [, state] = url.match(/&state=([^&]*)/) || [];
 
@@ -25,28 +24,32 @@ const LoginScreen = ({ onLogin }) => {
         console.log('Stored State:', storedState);
 
         if (code && state === storedState) {
-            // Exchange the authorization code for an access token
-            // Implement this part on your server to keep the client secret secure
-            // Example: send a request to your server to exchange the code for a token
+            try {
+                // Exchange code for access token and get user information
+                const response = await axios.post('http://localhost:3000/exchange-token', {
+                    code,
+                    redirectUri: Linking.makeUrl(),
+                });
 
-            // For now, just consider the user as authenticated
-            onLogin();
+                console.log('User Information:', response.data);
+
+                // Call the onLogin callback with user information
+                onLogin();
+            } catch (error) {
+                console.error('Error getting user information:', error.message);
+            }
         }
     };
 
     const handleLoginPress = async () => {
-        // Spotify API credentials
         const spotifyClientId = '249f2a846fd844ee80987d5b0406fc6d';
-        const redirectUri = "exp://hi-po0y.dlnruv.8081.exp.direct"
+        const redirectUri = Linking.makeUrl();
 
-        // Spotify API authorization endpoint
         const authorizationEndpoint = 'https://accounts.spotify.com/authorize';
 
-        // Generate and store a unique state value
         const state = Math.random().toString(36).substring(7);
         await AsyncStorage.setItem('spotify_auth_state', state);
 
-        // Spotify API scopes (permissions)
         const scopes = ['user-read-private', 'user-read-email'];
 
         // Build the authorization URL
@@ -56,9 +59,8 @@ const LoginScreen = ({ onLogin }) => {
             `&redirect_uri=${encodeURIComponent(redirectUri)}` +
             `&scope=${encodeURIComponent(scopes.join(' '))}` +
             `&state=${state}` +
-            '&show_dialog=true'; // Set to true to force login every time
+            '&show_dialog=true';
 
-        // Open the Spotify login page in the system browser
         Linking.openURL(authUrl);
     };
 

@@ -13,7 +13,7 @@ import LoginScreen from './screens/LoginScreen'; // Create a Login screen
 
 function App() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-
+    const [user, setUser] = useState(null);
     const handleLogin = () => {
         // In a real app, you would perform authentication here
         setIsAuthenticated(true);
