@@ -19,24 +19,29 @@ const LoginScreen = ({ onLogin }) => {
         console.log('Code:', code);
         console.log('State:', state);
 
-        // Verify the state to prevent CSRF attacks
         const storedState = await AsyncStorage.getItem('spotify_auth_state');
         console.log('Stored State:', storedState);
 
         if (code && state === storedState) {
+            const clientId = '249f2a846fd844ee80987d5b0406fc6d';
+            const clientSecret = 'ef7756f56b084b578334081d291fb52d';
+            const authorizationEndpoint = 'https://accounts.spotify.com/api/token';
             try {
-                // Exchange code for access token and get user information
-                const response = await axios.post('http://localhost:3000/exchange-token', {
-                    code,
-                    redirectUri: Linking.makeUrl(),
-                });
-
-                console.log('User Information:', response.data);
-
-                // Call the onLogin callback with user information
-                onLogin();
+                const response = await axios.post(
+                    authorizationEndpoint,
+                    `grant_type=authorization_code&code=${code}&redirect_uri=${Linking.makeUrl()}&client_id=${clientId}&client_secret=${clientSecret}`,
+                    {
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                    }
+                );
+                console.log('Response:', response.data);
+                const { access_token } = response.data;
+                await AsyncStorage.setItem('spotify_access_token', access_token);
+                onLogin(access_token);
             } catch (error) {
-                console.error('Error getting user information:', error.message);
+                console.error('Error:', error.message);
             }
         }
     };
@@ -52,7 +57,6 @@ const LoginScreen = ({ onLogin }) => {
 
         const scopes = ['user-read-private', 'user-read-email'];
 
-        // Build the authorization URL
         const authUrl =
             `${authorizationEndpoint}?response_type=code` +
             `&client_id=${spotifyClientId}` +
@@ -70,7 +74,6 @@ const LoginScreen = ({ onLogin }) => {
         </View>
     );
 };
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
