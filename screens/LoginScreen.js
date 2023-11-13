@@ -55,7 +55,7 @@ const LoginScreen = ({ onLogin }) => {
         const state = Math.random().toString(36).substring(7);
         await AsyncStorage.setItem('spotify_auth_state', state);
 
-        const scopes = ['user-read-private', 'user-read-email',"user-top-read"];
+        const scopes = ['user-read-private', 'user-read-email',"user-top-read","user-modify-playback-state","user-read-playback-state","user-read-currently-playing","user-modify-playback-state"];
 
         const authUrl =
             `${authorizationEndpoint}?response_type=code` +

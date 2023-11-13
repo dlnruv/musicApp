@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import {View, Text, Image, StyleSheet, ScrollView, Linking} from 'react-native';
 import axios from 'axios';
+import { Alert } from 'react-native';
 
 const HomeScreen = ({ accessToken }) => {
     const [userData, setUserData] = useState(null);
@@ -34,10 +35,51 @@ const HomeScreen = ({ accessToken }) => {
         fetchUserData();
     }, [accessToken]);
 
-    const handlePlayButtonPress = (trackUri) => {
-        // Open the Spotify app or web player to play the selected track
-        Linking.openURL(`spotify:track:${trackUri}`);
+    const startPlayback = async (trackUri) => {
+        try {
+            // Get the user's devices
+            const devicesResponse = await axios.get('https://api.spotify.com/v1/me/player/devices', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+
+            const devices = devicesResponse.data.devices;
+
+            if (devices.length > 0) {
+                // Use the first available device to start playback
+                const deviceId = devices[0].id;
+
+                // Start playback on the specified device
+                await axios.put(`https://api.spotify.com/v1/me/player/play`, {
+                    uris: [trackUri],
+                    device_id: deviceId,
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+            } else {
+                // No active devices found, show an alert
+                Alert.alert(
+                    'No Active Devices',
+                    'Open Spotify and play something to start playback.',
+                    [
+                        { text: 'OK', onPress: () => openSpotify() },
+                    ],
+                    { cancelable: false }
+                );
+            }
+        } catch (error) {
+            // dont do anything
+        }
+        const openSpotify = () => {
+            // Open the Spotify app or web player
+            Linking.openURL('https://open.spotify.com/');
+        };
     };
+
 
     return (
         <View style={styles.container}>
@@ -52,15 +94,17 @@ const HomeScreen = ({ accessToken }) => {
 
             <ScrollView showsVerticalScrollIndicator={false}>
                 {topTracks.map((track) => (
-                    <View key={track.id} style={styles.trackContainer}>
+                    <View
+                        key={track.id}
+                        style={styles.trackContainer}
+                        onStartShouldSetResponder={() => {
+                            // Start playback when the user taps on a track
+                            startPlayback(track.uri);
+                        }}
+                    >
                         <Image style={styles.trackImage} source={{ uri: track.album.images[0]?.url }} />
                         <Text style={styles.trackName}>{track.name}</Text>
                         <Text style={styles.artistName}>{track.artists[0].name}</Text>
-
-                        {/* Play button */}
-                        <TouchableOpacity onPress={() => handlePlayButtonPress(track.uri)}>
-                            <Text style={styles.playButton}>Play</Text>
-                        </TouchableOpacity>
                     </View>
                 ))}
             </ScrollView>
@@ -99,7 +143,7 @@ const styles = StyleSheet.create({
     },
     trackImage: {
         width: '100%',
-        height: 200,
+        height: 600,
         borderRadius: 10,
         marginBottom: 8,
     },
@@ -119,5 +163,4 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
 });
-
 export default HomeScreen;
