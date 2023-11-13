@@ -1,20 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import axios from 'axios'; // Import Axios for making HTTP requests
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import axios from 'axios';
 
 const HomeScreen = ({ accessToken }) => {
     const [userData, setUserData] = useState(null);
+    const [topTracks, setTopTracks] = useState([]);
 
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await axios.get('https://api.spotify.com/v1/me', {
+                // Fetch user data
+                const userResponse = await axios.get('https://api.spotify.com/v1/me', {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,
                     },
                 });
 
-                setUserData(response.data);
+                setUserData(userResponse.data);
+
+                // Fetch user's top tracks
+                const topTracksResponse = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                });
+
+                setTopTracks(topTracksResponse.data.items);
             } catch (error) {
                 console.error('Error fetching user data:', error);
             }
@@ -22,6 +33,11 @@ const HomeScreen = ({ accessToken }) => {
 
         fetchUserData();
     }, [accessToken]);
+
+    const handlePlayButtonPress = (trackUri) => {
+        // Open the Spotify app or web player to play the selected track
+        Linking.openURL(`spotify:track:${trackUri}`);
+    };
 
     return (
         <View style={styles.container}>
@@ -31,7 +47,23 @@ const HomeScreen = ({ accessToken }) => {
                     <Text style={styles.userName}>{userData.display_name}</Text>
                 </View>
             )}
-            {/* Your other content goes here */}
+
+            <Text style={styles.sectionTitle}>Top Tracks</Text>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+                {topTracks.map((track) => (
+                    <View key={track.id} style={styles.trackContainer}>
+                        <Image style={styles.trackImage} source={{ uri: track.album.images[0]?.url }} />
+                        <Text style={styles.trackName}>{track.name}</Text>
+                        <Text style={styles.artistName}>{track.artists[0].name}</Text>
+
+                        {/* Play button */}
+                        <TouchableOpacity onPress={() => handlePlayButtonPress(track.uri)}>
+                            <Text style={styles.playButton}>Play</Text>
+                        </TouchableOpacity>
+                    </View>
+                ))}
+            </ScrollView>
         </View>
     );
 };
@@ -39,12 +71,12 @@ const HomeScreen = ({ accessToken }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        padding: 16,
     },
     userInfoContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginBottom: 16,
     },
     profileImage: {
         width: 40,
@@ -55,6 +87,36 @@ const styles = StyleSheet.create({
     userName: {
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 8,
+    },
+    trackContainer: {
+        marginBottom: 20,
+        alignItems: 'center',
+    },
+    trackImage: {
+        width: '100%',
+        height: 200,
+        borderRadius: 10,
+        marginBottom: 8,
+    },
+    trackName: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginTop: 8,
+    },
+    artistName: {
+        fontSize: 14,
+        color: 'gray',
+        marginBottom: 8,
+    },
+    playButton: {
+        color: 'green',
+        fontWeight: 'bold',
+        marginTop: 8,
     },
 });
 
