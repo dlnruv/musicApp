@@ -92,13 +92,17 @@ const HomeScreen = ({ accessToken }) => {
 
             <Text style={styles.sectionTitle}>Top Tracks</Text>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                pagingEnabled
+                decelerationRate="fast"
+                snapToAlignment="center"
+            >
                 {topTracks.map((track) => (
                     <View
                         key={track.id}
                         style={styles.trackContainer}
                         onStartShouldSetResponder={() => {
-                            // Start playback when the user taps on a track
                             startPlayback(track.uri);
                         }}
                     >
@@ -108,6 +112,8 @@ const HomeScreen = ({ accessToken }) => {
                     </View>
                 ))}
             </ScrollView>
+
+
         </View>
     );
 };
