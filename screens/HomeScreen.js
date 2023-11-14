@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {View, Text, Image, StyleSheet, ScrollView, Linking} from 'react-native';
 import axios from 'axios';
 import { Alert } from 'react-native';
+import TrackItem from "./TrackItem";
 
 const HomeScreen = ({ accessToken }) => {
     const [userData, setUserData] = useState(null);
@@ -99,17 +100,7 @@ const HomeScreen = ({ accessToken }) => {
                 snapToAlignment="center"
             >
                 {topTracks.map((track) => (
-                    <View
-                        key={track.id}
-                        style={styles.trackContainer}
-                        onStartShouldSetResponder={() => {
-                            startPlayback(track.uri);
-                        }}
-                    >
-                        <Image style={styles.trackImage} source={{ uri: track.album.images[0]?.url }} />
-                        <Text style={styles.trackName}>{track.name}</Text>
-                        <Text style={styles.artistName}>{track.artists[0].name}</Text>
-                    </View>
+                    <TrackItem key={track.id} track={track} startPlayback={startPlayback} />
                 ))}
             </ScrollView>
 
@@ -142,31 +133,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 8,
-    },
-    trackContainer: {
-        marginBottom: 20,
-        alignItems: 'center',
-    },
-    trackImage: {
-        width: '100%',
-        height: 600,
-        borderRadius: 10,
-        marginBottom: 8,
-    },
-    trackName: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginTop: 8,
-    },
-    artistName: {
-        fontSize: 14,
-        color: 'gray',
-        marginBottom: 8,
-    },
-    playButton: {
-        color: 'green',
-        fontWeight: 'bold',
-        marginTop: 8,
     },
 });
 export default HomeScreen;
