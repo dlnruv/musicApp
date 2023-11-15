@@ -1,24 +1,11 @@
 // TrackItem.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
-import FastImage from 'react-native-fast-image';
+import {View, Text, StyleSheet, Animated, Image, Dimensions} from 'react-native';
 
-const TrackItem = ({ track, startPlayback }) => {
+const TrackItem = ({ track, startPlayback, height }) => {
     const [spinValue] = useState(new Animated.Value(0));
     const [backgroundColor, setBackgroundColor] = useState('transparent');
-
     useEffect(() => {
-        const fetchImageColor = async () => {
-            try {
-                const color = await FastImage.getColor(track.album.images[0]?.url);
-                setBackgroundColor(color);
-            } catch (error) {
-                console.error('Error fetching image color:', error);
-            }
-        };
-
-        fetchImageColor();
-
         // Start the rotation animation when the component mounts
         Animated.loop(
             Animated.timing(spinValue, {
@@ -27,13 +14,13 @@ const TrackItem = ({ track, startPlayback }) => {
                 useNativeDriver: true,
             })
         ).start();
-    }, [spinValue, track.album.images]);
+    }, [spinValue]);
 
     const spin = spinValue.interpolate({
         inputRange: [0, 1],
         outputRange: ['0deg', '360deg'],
     });
-
+    styles.trackContainer.height = height;
     return (
         <View
             style={[styles.trackContainer, { backgroundColor }]}
@@ -44,18 +31,21 @@ const TrackItem = ({ track, startPlayback }) => {
             <Animated.Image
                 style={[styles.trackImage, { transform: [{ rotate: spin }] }]}
                 source={{ uri: track.album.images[0]?.url }}
-                resizeMode={FastImage.resizeMode.cover}
+                resizeMode="cover"
             />
             <Text style={styles.trackName}>{track.name}</Text>
             <Text style={styles.artistName}>{track.artists[0].name}</Text>
         </View>
     );
+
 };
+const windowHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
     trackContainer: {
         marginBottom: 20,
         alignItems: 'center',
+        height: windowHeight * 1,
     },
     trackImage: {
         width: 200,

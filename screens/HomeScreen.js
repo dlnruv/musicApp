@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {View, Text, Image, StyleSheet, ScrollView, Linking} from 'react-native';
+import {View, Text, Image, StyleSheet, ScrollView, Linking, Dimensions} from 'react-native';
 import axios from 'axios';
 import { Alert } from 'react-native';
 import TrackItem from "./TrackItem";
@@ -81,17 +81,16 @@ const HomeScreen = ({ accessToken }) => {
         };
     };
 
-
     return (
         <View style={styles.container}>
-            {userData && (
-                <View style={styles.userInfoContainer}>
-                    <Image style={styles.profileImage} source={{ uri: userData.images[0]?.url }} />
-                    <Text style={styles.userName}>{userData.display_name}</Text>
-                </View>
-            )}
+            {/*{userData && (*/}
+            {/*    <View style={styles.userInfoContainer}>*/}
+            {/*        <Image style={styles.profileImage} source={{ uri: userData.images[0]?.url }} />*/}
+            {/*        <Text style={styles.userName}>{userData.display_name}</Text>*/}
+            {/*    </View>*/}
+            {/*)}*/}
 
-            <Text style={styles.sectionTitle}>Top Tracks</Text>
+            {/*<Text style={styles.sectionTitle}>Top Tracks</Text>*/}
 
             <ScrollView
                 showsVerticalScrollIndicator={false}
@@ -100,24 +99,26 @@ const HomeScreen = ({ accessToken }) => {
                 snapToAlignment="center"
             >
                 {topTracks.map((track) => (
-                    <TrackItem key={track.id} track={track} startPlayback={startPlayback} />
+                    <TrackItem key={track.id} track={track} startPlayback={startPlayback} height={0}/>
                 ))}
             </ScrollView>
-
 
         </View>
     );
 };
+const windowHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
+        padding: 0,
     },
     userInfoContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: windowHeight * .02,
+        marginTop: windowHeight * .05,
+        height: windowHeight * .05,
     },
     profileImage: {
         width: 40,
@@ -132,7 +133,8 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 8,
+        marginBottom: windowHeight * .02,
+        height: windowHeight * .05,
     },
 });
 export default HomeScreen;
