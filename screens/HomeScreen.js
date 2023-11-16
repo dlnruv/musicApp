@@ -99,7 +99,7 @@ const HomeScreen = ({ accessToken }) => {
                 snapToAlignment="center"
             >
                 {topTracks.map((track) => (
-                    <TrackItem key={track.id} track={track} startPlayback={startPlayback} height={0}/>
+                    <TrackItem key={track.id} track={track} startPlayback={startPlayback} accessToken={accessToken} />
                 ))}
             </ScrollView>
 
