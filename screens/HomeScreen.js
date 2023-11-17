@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {memo, useEffect, useState} from 'react';
 import {View, Text, Image, StyleSheet, ScrollView, Linking, Dimensions} from 'react-native';
 import axios from 'axios';
 import { Alert } from 'react-native';
@@ -81,6 +81,8 @@ const HomeScreen = ({ accessToken }) => {
         };
     };
 
+    const MemoizedTrackItem = memo(TrackItem);
+
     return (
         <View style={styles.container}>
             {/*{userData && (*/}
@@ -99,7 +101,7 @@ const HomeScreen = ({ accessToken }) => {
                 snapToAlignment="center"
             >
                 {topTracks.map((track) => (
-                    <TrackItem key={track.id} track={track} startPlayback={startPlayback} accessToken={accessToken} />
+                    <MemoizedTrackItem key={track.id} track={track} startPlayback={startPlayback} accessToken={accessToken} />
                 ))}
             </ScrollView>
 

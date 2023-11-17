@@ -6,10 +6,12 @@ const TrackItem = ({ track, startPlayback, accessToken }) => {
     const [spinValue] = useState(new Animated.Value(0));
     const [lyrics, setLyrics] = useState(null);
     const [backgroundColor, setBackgroundColor] = useState('transparent');
-    const [currentTime, setCurrentTime] = useState(0);
+    const [currentTime, setCurrentTime] = useState(getCurrentTimeInSeconds());
     const [duration, setDuration] = useState(0);
-    const [start, setStart] = useState(getCurrentTimeInSeconds());
-
+    const [startTime, setStart] = useState(0);
+    let starttimex = 1;
+    console.log("Start Time1: ", startTime);
+    console.log("Start Time1xxxxxxxxx: ", starttimex);
     useEffect(() => {
         const fetchTrackData = async () => {
             try {
@@ -31,44 +33,26 @@ const TrackItem = ({ track, startPlayback, accessToken }) => {
                 });
                 const data = await response.json();
                 setDuration(data.duration_ms);
+                console.log('Track data:', data.duration_ms);
             } catch (error) {
                 console.error('Error fetching track data:', error);
             }
         };
 
-        const intervalId = setInterval(() => {
-            setCurrentTime(getCurrentTimeInSeconds() - start);
-        }, 1000);
-
         fetchTrackData();
-
-        return () => {
-            clearInterval(intervalId); // Clear interval on component unmount
-        };
-    }, [spinValue, track.id, accessToken, start]);
+    }, [spinValue, track.id, accessToken, startTime]);
 
     useEffect(() => {
-        updateHighlights();
-    }, [lyrics, currentTime]);
-
-    const updateHighlights = () => {
-        if (lyrics && currentTime > 0) {
-            const highlightedLine = lyrics.lines.find(line => {
-                if (line.timeTag) {
-                    const startTime = parseFloat(line.timeTag.split(':')[0]) * 60 + parseFloat(line.timeTag.split(':')[1]);
-                    return currentTime >= startTime && currentTime <= startTime + 4; // Highlight for 4 seconds
-                }
-                return false; // Handle the case where line.timeTag is undefined
-            });
-
-
-            if (highlightedLine) {
-                setBackgroundColor('yellow');
+        const intervalId = setInterval(() => {
+            if (startTime > 0) {
+                setCurrentTime(getCurrentTimeInSeconds());
             } else {
-                setBackgroundColor('red');
+                setCurrentTime(0);
             }
-        }
-    };
+            console.log("Start Time: ", startTime);
+        }, 1000);
+        return () => clearInterval(intervalId);
+    }, [startTime]);
 
     const fetchLyrics = async (trackId) => {
         try {
@@ -78,6 +62,20 @@ const TrackItem = ({ track, startPlayback, accessToken }) => {
         } catch (error) {
             console.error('Error fetching lyrics:', error);
         }
+    };
+
+    const getLyrics = (words, startTimeMs) => {
+        let lineBackgroundColor = 'transparent';
+        if (startTime > 0) {
+            const lineStartTime = startTimeMs / 1000; // convert to seconds
+            const lineEndTime = lineStartTime + 5; // assuming lines last for 5 seconds
+
+            if (lineStartTime <= currentTime && currentTime <= lineEndTime) {
+                lineBackgroundColor = 'yellow';
+            }
+        }
+
+        return { words, backgroundColor: lineBackgroundColor };
     };
 
     const renderLyrics = () => {
@@ -93,29 +91,12 @@ const TrackItem = ({ track, startPlayback, accessToken }) => {
             <View>
                 <Text>Lyrics:</Text>
                 {lyrics.lines.map((line, index) => (
-                    <Text key={index} style={{ backgroundColor: backgroundColor }}>
-                        {getLyrics(line.words, line.startTimeMs)}
+                    <Text key={index} style={{ backgroundColor: getLyrics(line.words,line.startTimeMs).backgroundColor, fontSize: 6}}>
+                        {getLyrics(line.words, line.startTimeMs).words}
                     </Text>
                 ))}
             </View>
         );
-    };
-
-    const getLyrics = (words, startTimeMs) => {
-        if (currentTime > 0) {
-            const startTime = parseFloat(startTimeMs) / 1000;
-            const endTime = startTime + 4;
-            if (currentTime >= startTime && currentTime <= endTime) {
-                return words;
-            }
-        }
-    };
-
-    const formatTimeTag = (timeTagMs) => {
-        const totalSeconds = parseInt(timeTagMs) / 1000;
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = Math.floor(totalSeconds % 60);
-        return `${minutes}:${seconds}`;
     };
 
     const styles = StyleSheet.create({
@@ -141,11 +122,20 @@ const TrackItem = ({ track, startPlayback, accessToken }) => {
             marginBottom: 8,
         },
     });
+    const formatTimeTag = (timeTagMs) => {
+        const totalSeconds = parseInt(timeTagMs) / 1000;
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = Math.floor(totalSeconds % 60);
+        return `${minutes}:${seconds}`;
+    };
 
     return (
         <View
             style={[styles.trackContainer, { backgroundColor }]}
             onStartShouldSetResponder={() => {
+                setStart(2);
+                starttimex = 2;
+                console.log("Start Time2: ", startTime);
                 startPlayback(track.uri);
             }}
         >
@@ -159,6 +149,7 @@ const TrackItem = ({ track, startPlayback, accessToken }) => {
             {renderLyrics()}
         </View>
     );
+
 };
 
 const windowHeight = Dimensions.get('window').height;
